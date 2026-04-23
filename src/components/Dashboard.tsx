@@ -125,7 +125,7 @@ export default function Dashboard({ store, onNavigate }: { store: ReturnType<typ
 
       {entries.length === 0 && (
         <div className="bg-teal-500/10 text-teal-400 p-6 rounded-2xl border border-teal-500/30 text-center">
-          <h3 className="font-medium text-lg mb-2 text-white">Welcome to LibraFlow</h3>
+          <h3 className="font-medium text-lg mb-2 text-white">Welcome to My Weight Manager</h3>
           <p className="text-sm mb-4 text-gray-400">Start your journey by logging your first weight.</p>
           <button
             onClick={() => setIsAdding(true)}
