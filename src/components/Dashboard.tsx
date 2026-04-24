@@ -4,26 +4,36 @@ import { format } from 'date-fns';
 import { useWeightManager } from '../store';
 import { AddWeightModal } from './AddWeightModal';
 import { formatWeight, calculateBMI, getBMICategory } from '../lib/utils';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine, Legend } from 'recharts';
 
 export default function Dashboard({ store, onNavigate }: { store: ReturnType<typeof useWeightManager>; onNavigate: (tab: any) => void }) {
   const [isAdding, setIsAdding] = useState(false);
   const { entries, settings } = store;
 
   const sortedEntries = [...entries].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
-  const recentEntries = sortedEntries.slice(-14); // Last 14 entries for the mini chart
-
-  const chartData = recentEntries.map(e => ({
-    date: format(new Date(e.date), 'MMM d'),
-    weight: settings.unit === 'kg' ? e.weightKg : e.weightKg * 2.20462
-  }));
 
   const latestEntry = entries[0];
+  const firstEntry = sortedEntries[0];
   const previousEntry = entries[1];
 
-  const diff = latestEntry && previousEntry ? latestEntry.weightKg - previousEntry.weightKg : 0;
-  const isLoss = diff < 0;
-  const isGain = diff > 0;
+  const totalChangeKg = latestEntry && firstEntry ? latestEntry.weightKg - firstEntry.weightKg : 0;
+  const daysTracked = latestEntry && firstEntry ? Math.max(1, Math.round((new Date(latestEntry.date).getTime() - new Date(firstEntry.date).getTime()) / (1000 * 60 * 60 * 24))) : 1;
+  const weeklyChangeKg = (totalChangeKg / daysTracked) * 7;
+
+  const currentGoalWeight = settings.goalWeightKg 
+    ? (settings.unit === 'kg' ? settings.goalWeightKg : settings.goalWeightKg * 2.20462) 
+    : undefined;
+
+  const goalChartData = sortedEntries.map(e => ({
+    date: format(new Date(e.date), 'MMM d'),
+    Weight: settings.unit === 'kg' ? e.weightKg : e.weightKg * 2.20462
+  }));
+
+  const minWeight = goalChartData.length > 0 ? Math.min(...goalChartData.map(d => d.Weight)) : 0;
+  const maxWeight = goalChartData.length > 0 ? Math.max(...goalChartData.map(d => d.Weight)) : 0;
+  
+  const yDomainMin = currentGoalWeight ? Math.min(minWeight, currentGoalWeight) - 2 : 'dataMin - 1';
+  const yDomainMax = currentGoalWeight ? Math.max(maxWeight, currentGoalWeight) + 2 : 'dataMax + 1';
 
   return (
     <div className="space-y-6">
@@ -43,12 +53,6 @@ export default function Dashboard({ store, onNavigate }: { store: ReturnType<typ
                 {latestEntry ? formatWeight(latestEntry.weightKg, settings.unit) : '--'}
               </span>
             </div>
-            {latestEntry && previousEntry && (
-              <p className={`text-sm font-medium mt-2 flex items-center ${isLoss ? 'text-teal-400' : isGain ? 'text-red-400' : 'text-gray-500'}`}>
-                {isLoss ? '↓ ' : isGain ? '↑ ' : '−'}
-                {Math.abs(settings.unit === 'kg' ? diff : diff * 2.20462).toFixed(1)} {settings.unit}
-              </p>
-            )}
           </div>
 
           {(settings.heightCm && latestEntry) && (() => {
@@ -68,53 +72,74 @@ export default function Dashboard({ store, onNavigate }: { store: ReturnType<typ
               </div>
             );
           })()}
-
-          {settings.goalWeightKg && (
-            <div className="flex-1 min-w-[100px] text-left sm:text-right sm:border-l sm:border-[#242426] sm:pl-6">
-              <p className="text-xs text-gray-500 uppercase tracking-widest font-bold mb-1">Goal</p>
-              <div className="flex items-baseline justify-start sm:justify-end space-x-2">
-                <span className="text-3xl font-bold text-gray-400">
-                  {formatWeight(settings.goalWeightKg, settings.unit)}
-                </span>
-              </div>
-            </div>
-          )}
         </div>
       </div>
 
-      {chartData.length > 1 && (
+      <div className="grid grid-cols-2 gap-4">
+        <div className="bg-[#161618] border border-[#242426] p-5 rounded-2xl">
+          <p className="text-gray-500 text-xs uppercase tracking-widest mb-1 font-bold">Total Change</p>
+          <p className={`text-2xl font-bold ${totalChangeKg < 0 ? 'text-teal-400' : 'text-red-400'}`}>
+            {totalChangeKg > 0 ? '+' : ''}{formatWeight(totalChangeKg, settings.unit)}
+          </p>
+        </div>
+        <div className="bg-[#161618] border border-[#242426] p-5 rounded-2xl">
+          <p className="text-gray-500 text-xs uppercase tracking-widest mb-1 font-bold">Weekly Trend</p>
+          <p className={`text-2xl font-bold ${weeklyChangeKg < 0 ? 'text-teal-400' : 'text-white'}`}>
+            {weeklyChangeKg > 0 ? '+' : ''}{formatWeight(weeklyChangeKg, settings.unit, 2)}
+          </p>
+        </div>
+      </div>
+
+      {goalChartData.length > 1 && (
         <div className="bg-[#161618] rounded-3xl p-6 border border-[#242426] h-72 flex flex-col">
-          <h3 className="font-semibold text-lg text-white mb-6">Weight Trends</h3>
+          <h3 className="font-semibold text-lg text-white mb-6">Goal Progress</h3>
           <div className="flex-1 min-h-0">
             <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={chartData}>
+              <LineChart data={goalChartData}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#242426" />
                 <XAxis 
                   dataKey="date" 
                   axisLine={false} 
                   tickLine={false} 
                   tick={{ fontSize: 10, fill: '#6B7280', fontWeight: 'bold' }} 
-                  dy={10}
+                  dy={10} 
                 />
                 <YAxis 
-                  domain={['dataMin - 1', 'dataMax + 1']} 
+                  domain={[yDomainMin, yDomainMax]} 
                   axisLine={false} 
                   tickLine={false} 
-                  tick={{ fontSize: 10, fill: '#6B7280', fontWeight: 'bold' }}
+                  tick={{ fontSize: 10, fill: '#6B7280', fontWeight: 'bold' }} 
                   dx={-10}
                   tickFormatter={(val) => val.toFixed(0)}
                 />
                 <Tooltip 
+                  cursor={{ stroke: '#242426', strokeWidth: 1, strokeDasharray: '5 5' }}
                   contentStyle={{ borderRadius: '12px', border: '1px solid #242426', backgroundColor: '#1C1C1E', color: '#E4E4E6' }}
-                  itemStyle={{ color: '#14b8a6' }}
-                  formatter={(value: number) => [`${value.toFixed(1)} ${settings.unit}`, 'Weight']}
+                  itemStyle={{ fontWeight: 'bold' }}
+                  formatter={(value: number, name: string) => {
+                     // For st units, tooltip formatting shows lbs directly. 
+                     return [`${value.toFixed(1)} ${settings.unit === 'kg' ? 'kg' : 'lbs'}`, name];
+                  }}
                 />
+                <Legend 
+                  wrapperStyle={{ fontSize: '10px', fontWeight: 'bold', color: '#6B7280', paddingTop: '10px' }} 
+                  iconType="circle"
+                />
+                {currentGoalWeight && (
+                  <ReferenceLine 
+                    y={currentGoalWeight} 
+                    stroke="#ef4444" 
+                    strokeDasharray="4 4" 
+                    strokeWidth={2}
+                    label={{ position: 'top', value: 'TARGET', fill: '#ef4444', fontSize: 10, fontWeight: 'bold' }}
+                  />
+                )}
                 <Line 
                   type="monotone" 
-                  dataKey="weight" 
+                  dataKey="Weight" 
                   stroke="#14b8a6" 
                   strokeWidth={3}
-                  dot={{ r: 4, strokeWidth: 2, fill: '#161618', stroke: '#14b8a6' }}
+                  dot={false}
                   activeDot={{ r: 6, strokeWidth: 2, stroke: '#14b8a6', fill: '#0F0F10' }}
                 />
               </LineChart>

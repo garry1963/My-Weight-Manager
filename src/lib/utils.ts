@@ -21,9 +21,27 @@ export function inchesToCm(inches: number): number {
   return inches * 2.54;
 }
 
-export function formatWeight(weightInKg: number, unit: 'kg' | 'lbs', decimals: number = 1): string {
-  const value = unit === 'kg' ? weightInKg : kgToLbs(weightInKg);
-  return `${value.toFixed(decimals)} ${unit}`;
+export function kgToStoneLbs(kg: number): { st: number; lbs: number } {
+  const totalLbs = kg * 2.20462;
+  const st = Math.floor(totalLbs / 14);
+  const lbs = totalLbs % 14;
+  return { st, lbs };
+}
+
+export function stoneLbsToKg(st: number, lbs: number): number {
+  const totalLbs = (st * 14) + lbs;
+  return totalLbs / 2.20462;
+}
+
+export function formatWeight(weightInKg: number, unit: 'kg' | 'lbs' | 'st', decimals: number = 1): string {
+  if (unit === 'kg') {
+    return `${weightInKg.toFixed(decimals)} kg`;
+  } else if (unit === 'lbs') {
+    return `${kgToLbs(weightInKg).toFixed(decimals)} lbs`;
+  } else {
+    const { st, lbs } = kgToStoneLbs(weightInKg);
+    return `${st}st ${Math.round(lbs)}lb`;
+  }
 }
 
 export function calculateBMI(weightKg: number, heightCm: number): number {

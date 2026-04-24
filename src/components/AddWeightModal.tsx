@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { format } from 'date-fns';
 import { X } from 'lucide-react';
 import { useWeightManager } from '../store';
-import { kgToLbs, lbsToKg } from '../lib/utils';
+import { kgToLbs, lbsToKg, kgToStoneLbs, stoneLbsToKg } from '../lib/utils';
 
 export function AddWeightModal({ store, onClose }: { store: ReturnType<typeof useWeightManager>; onClose: () => void }) {
   const { addEntry, settings, entries } = store;
@@ -12,21 +12,40 @@ export function AddWeightModal({ store, onClose }: { store: ReturnType<typeof us
   
   // Initialize weight field based on the most recent entry if available
   const [weight, setWeight] = useState<string>('');
+  const [weightSt, setWeightSt] = useState<string>('');
+  const [weightLbs, setWeightLbs] = useState<string>('');
   const [note, setNote] = useState('');
 
   useEffect(() => {
     if (entries.length > 0) {
       const latest = entries[0].weightKg;
-      setWeight((settings.unit === 'kg' ? latest : latest * 2.20462).toFixed(1));
+      if (settings.unit === 'kg') {
+        setWeight(latest.toFixed(1));
+      } else if (settings.unit === 'lbs') {
+        setWeight((latest * 2.20462).toFixed(1));
+      } else {
+        const { st, lbs } = kgToStoneLbs(latest);
+        setWeightSt(st.toString());
+        setWeightLbs(lbs.toFixed(1));
+      }
     }
   }, [entries, settings.unit]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const w = parseFloat(weight);
-    if (isNaN(w) || w <= 0) return;
-
-    const weightKg = settings.unit === 'kg' ? w : lbsToKg(w);
+    
+    let weightKg = 0;
+    
+    if (settings.unit === 'st') {
+      const st = parseInt(weightSt) || 0;
+      const lbs = parseFloat(weightLbs) || 0;
+      if (st <= 0 && lbs <= 0) return;
+      weightKg = stoneLbsToKg(st, lbs);
+    } else {
+      const w = parseFloat(weight);
+      if (isNaN(w) || w <= 0) return;
+      weightKg = settings.unit === 'kg' ? w : lbsToKg(w);
+    }
     
     addEntry({
       date,
@@ -65,21 +84,53 @@ export function AddWeightModal({ store, onClose }: { store: ReturnType<typeof us
 
           <div>
             <label htmlFor="weight" className="text-xs text-gray-500 uppercase font-bold tracking-widest mb-2 block">Weight Value</label>
-            <div className="relative">
-              <input
-                type="number"
-                id="weight"
-                required
-                step="0.1"
-                min="1"
-                value={weight}
-                onChange={(e) => setWeight(e.target.value)}
-                className="w-full bg-[#1C1C1E] border border-[#242426] rounded-xl px-4 py-4 text-3xl font-bold focus:outline-none focus:border-teal-500 transition-all text-center tracking-tight text-white placeholder-gray-600 appearance-none"
-                placeholder={`e.g., ${settings.unit === 'kg' ? '70.5' : '155.0'}`}
-                autoFocus
-              />
-              <span className="absolute right-6 top-1/2 -translate-y-1/2 text-gray-500 font-bold uppercase tracking-widest">{settings.unit}</span>
-            </div>
+            {settings.unit === 'st' ? (
+              <div className="flex gap-4">
+                <div className="relative flex-1">
+                  <input
+                    type="number"
+                    required
+                    min="0"
+                    value={weightSt}
+                    onChange={(e) => setWeightSt(e.target.value)}
+                    className="w-full bg-[#1C1C1E] border border-[#242426] rounded-xl px-4 py-4 text-3xl font-bold focus:outline-none focus:border-teal-500 transition-all text-center tracking-tight text-white placeholder-gray-600 appearance-none"
+                    placeholder="10"
+                    autoFocus
+                  />
+                  <span className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 font-bold uppercase tracking-widest">st</span>
+                </div>
+                <div className="relative flex-1">
+                  <input
+                    type="number"
+                    required
+                    step="0.1"
+                    min="0"
+                    max="13.9"
+                    value={weightLbs}
+                    onChange={(e) => setWeightLbs(e.target.value)}
+                    className="w-full bg-[#1C1C1E] border border-[#242426] rounded-xl px-4 py-4 text-3xl font-bold focus:outline-none focus:border-teal-500 transition-all text-center tracking-tight text-white placeholder-gray-600 appearance-none"
+                    placeholder="5.0"
+                  />
+                  <span className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 font-bold uppercase tracking-widest">lb</span>
+                </div>
+              </div>
+            ) : (
+              <div className="relative">
+                <input
+                  type="number"
+                  id="weight"
+                  required
+                  step="0.1"
+                  min="1"
+                  value={weight}
+                  onChange={(e) => setWeight(e.target.value)}
+                  className="w-full bg-[#1C1C1E] border border-[#242426] rounded-xl px-4 py-4 text-3xl font-bold focus:outline-none focus:border-teal-500 transition-all text-center tracking-tight text-white placeholder-gray-600 appearance-none"
+                  placeholder={`e.g., ${settings.unit === 'kg' ? '70.5' : '155.0'}`}
+                  autoFocus
+                />
+                <span className="absolute right-6 top-1/2 -translate-y-1/2 text-gray-500 font-bold uppercase tracking-widest">{settings.unit}</span>
+              </div>
+            )}
           </div>
 
           <div>

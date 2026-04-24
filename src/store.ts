@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 
-export type Unit = 'kg' | 'lbs';
+export type Unit = 'kg' | 'lbs' | 'st';
 
 export interface WeightEntry {
   id: string;

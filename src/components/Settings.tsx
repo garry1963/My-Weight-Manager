@@ -7,11 +7,23 @@ export default function Settings({ store }: { store: ReturnType<typeof useWeight
   const { settings, updateSettings } = store;
   
   const [goalInput, setGoalInput] = useState<string>(
-    settings.goalWeightKg 
+    settings.goalWeightKg && settings.unit !== 'st'
       ? (settings.unit === 'kg' ? settings.goalWeightKg : settings.goalWeightKg * 2.20462).toFixed(1)
       : ''
   );
   
+  const [goalInputSt, setGoalInputSt] = useState<string>(
+    settings.goalWeightKg && settings.unit === 'st'
+      ? kgToStoneLbs(settings.goalWeightKg).st.toString()
+      : ''
+  );
+
+  const [goalInputLbs, setGoalInputLbs] = useState<string>(
+    settings.goalWeightKg && settings.unit === 'st'
+      ? kgToStoneLbs(settings.goalWeightKg).lbs.toFixed(1)
+      : ''
+  );
+
   const [heightInput, setHeightInput] = useState<string>(
     settings.heightCm 
       ? (settings.unit === 'kg' ? settings.heightCm : cmToInches(settings.heightCm)).toFixed(1)
@@ -20,17 +32,31 @@ export default function Settings({ store }: { store: ReturnType<typeof useWeight
 
   const [isSaved, setIsSaved] = useState(false);
 
-  const handleUnitToggle = (unit: 'kg' | 'lbs') => {
+  const handleUnitToggle = (unit: 'kg' | 'lbs' | 'st') => {
     if (unit === settings.unit) return;
     
-    if (goalInput) {
-      const currentVal = parseFloat(goalInput);
-      if (!isNaN(currentVal)) {
-        if (unit === 'kg') {
-          setGoalInput(lbsToKg(currentVal).toFixed(1));
-        } else {
-          setGoalInput(kgToLbs(currentVal).toFixed(1));
-        }
+    // We should compute the current target weight in kg first to safely transition to the new unit formatting
+    let currentGoalKg: number | null = null;
+    
+    if (settings.unit === 'st') {
+       if (goalInputSt || goalInputLbs) {
+         currentGoalKg = stoneLbsToKg(parseInt(goalInputSt) || 0, parseFloat(goalInputLbs) || 0);
+       }
+    } else {
+       if (goalInput) {
+         currentGoalKg = settings.unit === 'kg' ? parseFloat(goalInput) : lbsToKg(parseFloat(goalInput));
+       }
+    }
+
+    if (currentGoalKg !== null && !isNaN(currentGoalKg)) {
+      if (unit === 'kg') {
+        setGoalInput(currentGoalKg.toFixed(1));
+      } else if (unit === 'lbs') {
+        setGoalInput((currentGoalKg * 2.20462).toFixed(1));
+      } else {
+        const { st, lbs } = kgToStoneLbs(currentGoalKg);
+        setGoalInputSt(st.toString());
+        setGoalInputLbs(lbs.toFixed(1));
       }
     }
 
@@ -38,11 +64,15 @@ export default function Settings({ store }: { store: ReturnType<typeof useWeight
       const currentHeight = parseFloat(heightInput);
       if (!isNaN(currentHeight)) {
         if (unit === 'kg') {
-          // If switching to cm
-          setHeightInput(inchesToCm(currentHeight).toFixed(1));
+          // If switching to cm from Imperial
+          if (settings.unit !== 'kg') {
+            setHeightInput(inchesToCm(currentHeight).toFixed(1));
+          }
         } else {
-          // If switching to inches
-          setHeightInput(cmToInches(currentHeight).toFixed(1));
+          // If switching to Imperial from cm
+          if (settings.unit === 'kg') {
+            setHeightInput(cmToInches(currentHeight).toFixed(1));
+          }
         }
       }
     }
@@ -53,12 +83,22 @@ export default function Settings({ store }: { store: ReturnType<typeof useWeight
   const handleSaveGoal = () => {
     const valsToUpdate: Partial<typeof settings> = {};
     
-    const val = parseFloat(goalInput);
-    if (!isNaN(val) && val > 0) {
-      const kgValue = settings.unit === 'kg' ? val : lbsToKg(val);
-      valsToUpdate.goalWeightKg = kgValue;
-    } else if (goalInput === '') {
-      valsToUpdate.goalWeightKg = null;
+    if (settings.unit === 'st') {
+      const st = parseInt(goalInputSt) || 0;
+      const lbs = parseFloat(goalInputLbs) || 0;
+      if (st > 0 || lbs > 0) {
+        valsToUpdate.goalWeightKg = stoneLbsToKg(st, lbs);
+      } else if (goalInputSt === '' && goalInputLbs === '') {
+        valsToUpdate.goalWeightKg = null;
+      }
+    } else {
+      const val = parseFloat(goalInput);
+      if (!isNaN(val) && val > 0) {
+        const kgValue = settings.unit === 'kg' ? val : lbsToKg(val);
+        valsToUpdate.goalWeightKg = kgValue;
+      } else if (goalInput === '') {
+        valsToUpdate.goalWeightKg = null;
+      }
     }
 
     const heightVal = parseFloat(heightInput);
@@ -107,6 +147,16 @@ export default function Settings({ store }: { store: ReturnType<typeof useWeight
             >
               Imperial (lb)
             </button>
+            <button
+              onClick={() => handleUnitToggle('st')}
+              className={`flex-1 py-2 text-sm font-bold rounded-lg transition-colors cursor-pointer ${
+                settings.unit === 'st' 
+                  ? 'bg-teal-500 text-black' 
+                  : 'text-gray-400 hover:text-white'
+              }`}
+            >
+              Imperial (st)
+            </button>
           </div>
         </div>
 
@@ -133,16 +183,42 @@ export default function Settings({ store }: { store: ReturnType<typeof useWeight
               <label htmlFor="goal" className="text-xs text-gray-500 uppercase font-bold tracking-widest mb-2 block">
                 Target Weight ({settings.unit})
               </label>
-              <div className="flex space-x-3">
-                <input
-                  type="number"
-                  id="goal"
-                  value={goalInput}
-                  onChange={(e) => setGoalInput(e.target.value)}
-                  placeholder={`e.g., ${settings.unit === 'kg' ? '65.0' : '145.0'}`}
-                  className="flex-1 bg-[#1C1C1E] border border-[#242426] rounded-xl px-4 py-3 text-white focus:outline-none focus:border-teal-500 font-bold transition-all"
-                />
-              </div>
+              {settings.unit === 'st' ? (
+                <div className="flex space-x-3">
+                  <div className="relative flex-1">
+                    <input
+                      type="number"
+                      value={goalInputSt}
+                      onChange={(e) => setGoalInputSt(e.target.value)}
+                      placeholder="10"
+                      className="w-full bg-[#1C1C1E] border border-[#242426] rounded-xl px-4 py-3 text-white focus:outline-none focus:border-teal-500 font-bold transition-all"
+                    />
+                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm font-bold uppercase">st</span>
+                  </div>
+                  <div className="relative flex-1">
+                    <input
+                      type="number"
+                      step="0.1"
+                      value={goalInputLbs}
+                      onChange={(e) => setGoalInputLbs(e.target.value)}
+                      placeholder="5.0"
+                      className="w-full bg-[#1C1C1E] border border-[#242426] rounded-xl px-4 py-3 text-white focus:outline-none focus:border-teal-500 font-bold transition-all"
+                    />
+                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm font-bold uppercase">lb</span>
+                  </div>
+                </div>
+              ) : (
+                <div className="flex space-x-3">
+                  <input
+                    type="number"
+                    id="goal"
+                    value={goalInput}
+                    onChange={(e) => setGoalInput(e.target.value)}
+                    placeholder={`e.g., ${settings.unit === 'kg' ? '65.0' : '145.0'}`}
+                    className="flex-1 bg-[#1C1C1E] border border-[#242426] rounded-xl px-4 py-3 text-white focus:outline-none focus:border-teal-500 font-bold transition-all"
+                  />
+                </div>
+              )}
             </div>
             
             <div className="pt-2">
