@@ -171,10 +171,11 @@ export default function Settings({ store }: { store: ReturnType<typeof useWeight
                 <input
                   type="number"
                   id="height"
+                  inputMode="decimal"
                   value={heightInput}
                   onChange={(e) => setHeightInput(e.target.value)}
                   placeholder={`e.g., ${settings.unit === 'kg' ? '175.0' : '68.0'}`}
-                  className="flex-1 bg-[#1C1C1E] border border-[#242426] rounded-xl px-4 py-3 text-white focus:outline-none focus:border-teal-500 font-bold transition-all"
+                  className="flex-1 bg-[#1C1C1E] border border-[#242426] rounded-xl px-4 py-3 text-lg sm:text-base text-white focus:outline-none focus:border-teal-500 font-bold transition-all appearance-none m-0"
                 />
               </div>
             </div>
@@ -184,14 +185,15 @@ export default function Settings({ store }: { store: ReturnType<typeof useWeight
                 Target Weight ({settings.unit})
               </label>
               {settings.unit === 'st' ? (
-                <div className="flex space-x-3">
+                <div className="flex space-x-3 gap-2 sm:gap-0">
                   <div className="relative flex-1">
                     <input
                       type="number"
+                      inputMode="decimal"
                       value={goalInputSt}
                       onChange={(e) => setGoalInputSt(e.target.value)}
                       placeholder="10"
-                      className="w-full bg-[#1C1C1E] border border-[#242426] rounded-xl px-4 py-3 text-white focus:outline-none focus:border-teal-500 font-bold transition-all appearance-none"
+                      className="w-full bg-[#1C1C1E] border border-[#242426] rounded-xl px-4 py-3 text-lg sm:text-base text-white focus:outline-none focus:border-teal-500 font-bold transition-all appearance-none m-0"
                     />
                     <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm font-bold uppercase pointer-events-none">st</span>
                   </div>
@@ -199,10 +201,11 @@ export default function Settings({ store }: { store: ReturnType<typeof useWeight
                     <input
                       type="number"
                       step="0.1"
+                      inputMode="decimal"
                       value={goalInputLbs}
                       onChange={(e) => setGoalInputLbs(e.target.value)}
                       placeholder="5.0"
-                      className="w-full bg-[#1C1C1E] border border-[#242426] rounded-xl px-4 py-3 text-white focus:outline-none focus:border-teal-500 font-bold transition-all appearance-none"
+                      className="w-full bg-[#1C1C1E] border border-[#242426] rounded-xl px-4 py-3 text-lg sm:text-base text-white focus:outline-none focus:border-teal-500 font-bold transition-all appearance-none m-0"
                     />
                     <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm font-bold uppercase pointer-events-none">lb</span>
                   </div>
@@ -212,10 +215,11 @@ export default function Settings({ store }: { store: ReturnType<typeof useWeight
                   <input
                     type="number"
                     id="goal"
+                    inputMode="decimal"
                     value={goalInput}
                     onChange={(e) => setGoalInput(e.target.value)}
                     placeholder={`e.g., ${settings.unit === 'kg' ? '65.0' : '145.0'}`}
-                    className="flex-1 bg-[#1C1C1E] border border-[#242426] rounded-xl px-4 py-3 text-white focus:outline-none focus:border-teal-500 font-bold transition-all"
+                    className="flex-1 bg-[#1C1C1E] border border-[#242426] rounded-xl px-4 py-3 text-lg sm:text-base text-white focus:outline-none focus:border-teal-500 font-bold transition-all appearance-none m-0"
                   />
                 </div>
               )}

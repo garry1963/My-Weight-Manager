@@ -117,8 +117,8 @@ export default function Dashboard({ store, onNavigate }: { store: ReturnType<typ
                   contentStyle={{ borderRadius: '12px', border: '1px solid #242426', backgroundColor: '#1C1C1E', color: '#E4E4E6' }}
                   itemStyle={{ fontWeight: 'bold' }}
                   formatter={(value: number, name: string) => {
-                     // For st units, tooltip formatting shows lbs directly. 
-                     return [`${value.toFixed(1)} ${settings.unit === 'kg' ? 'kg' : 'lbs'}`, name];
+                     const kgVal = settings.unit === 'kg' ? value : value / 2.20462;
+                     return [formatWeight(kgVal, settings.unit), name];
                   }}
                 />
                 <Legend 

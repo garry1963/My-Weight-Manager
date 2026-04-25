@@ -90,10 +90,11 @@ export function AddWeightModal({ store, onClose }: { store: ReturnType<typeof us
                   <input
                     type="number"
                     id="weight"
+                    inputMode="decimal"
                     min="0"
                     value={weightSt}
                     onChange={(e) => setWeightSt(e.target.value)}
-                    className="w-full bg-[#1C1C1E] border border-[#242426] rounded-xl px-4 py-4 text-3xl font-bold focus:outline-none focus:border-teal-500 transition-all text-center tracking-tight text-white placeholder-gray-600 appearance-none"
+                    className="w-full bg-[#1C1C1E] border border-[#242426] rounded-xl px-4 py-4 text-3xl font-bold focus:outline-none focus:border-teal-500 transition-all text-center tracking-tight text-white placeholder-gray-600 appearance-none m-0"
                     placeholder="10"
                     autoFocus
                   />
@@ -102,11 +103,12 @@ export function AddWeightModal({ store, onClose }: { store: ReturnType<typeof us
                 <div className="relative flex-1">
                   <input
                     type="number"
+                    inputMode="decimal"
                     step="0.1"
                     min="0"
                     value={weightLbs}
                     onChange={(e) => setWeightLbs(e.target.value)}
-                    className="w-full bg-[#1C1C1E] border border-[#242426] rounded-xl px-4 py-4 text-3xl font-bold focus:outline-none focus:border-teal-500 transition-all text-center tracking-tight text-white placeholder-gray-600 appearance-none"
+                    className="w-full bg-[#1C1C1E] border border-[#242426] rounded-xl px-4 py-4 text-3xl font-bold focus:outline-none focus:border-teal-500 transition-all text-center tracking-tight text-white placeholder-gray-600 appearance-none m-0"
                     placeholder="5.0"
                   />
                   <span className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 font-bold uppercase tracking-widest pointer-events-none">lb</span>
@@ -117,12 +119,13 @@ export function AddWeightModal({ store, onClose }: { store: ReturnType<typeof us
                 <input
                   type="number"
                   id="weight"
+                  inputMode="decimal"
                   required
                   step="0.1"
                   min="0.1"
                   value={weight}
                   onChange={(e) => setWeight(e.target.value)}
-                  className="w-full bg-[#1C1C1E] border border-[#242426] rounded-xl px-4 py-4 text-3xl font-bold focus:outline-none focus:border-teal-500 transition-all text-center tracking-tight text-white placeholder-gray-600 appearance-none"
+                  className="w-full bg-[#1C1C1E] border border-[#242426] rounded-xl px-4 py-4 text-3xl font-bold focus:outline-none focus:border-teal-500 transition-all text-center tracking-tight text-white placeholder-gray-600 appearance-none m-0"
                   placeholder={`e.g., ${settings.unit === 'kg' ? '70.5' : '155.0'}`}
                   autoFocus
                 />
@@ -133,19 +136,19 @@ export function AddWeightModal({ store, onClose }: { store: ReturnType<typeof us
 
           <div>
             <label htmlFor="note" className="text-xs text-gray-500 uppercase font-bold tracking-widest mb-2 block">Note (Optional)</label>
-            <input
-              type="text"
+            <textarea
               id="note"
               value={note}
               onChange={(e) => setNote(e.target.value)}
-              className="w-full bg-[#1C1C1E] border border-[#242426] rounded-xl px-4 py-3 text-white focus:outline-none focus:border-teal-500 transition-all font-medium"
+              className="w-full bg-[#1C1C1E] border border-[#242426] rounded-xl px-4 py-3 text-white focus:outline-none focus:border-teal-500 transition-all font-medium text-base sm:text-sm resize-none"
               placeholder="How are you feeling?"
+              rows={2}
             />
           </div>
 
           <button
             type="submit"
-            className="w-full py-4 bg-teal-500 text-black font-bold rounded-2xl hover:bg-teal-400 active:scale-[0.98] transition-all shadow-lg shadow-teal-500/10 mt-8 cursor-pointer"
+            className="w-full py-4 bg-teal-500 text-black font-bold rounded-2xl hover:bg-teal-400 active:scale-[0.98] transition-all shadow-lg shadow-teal-500/10 mt-8 cursor-pointer text-lg min-h-[56px]"
           >
             Log Entry
           </button>

@@ -188,7 +188,10 @@ export default function Statistics({ store }: { store: ReturnType<typeof useWeig
                 cursor={{ fill: '#1C1C1E' }}
                 contentStyle={{ borderRadius: '12px', border: '1px solid #242426', backgroundColor: '#1C1C1E', color: '#E4E4E6' }}
                 itemStyle={{ color: '#14b8a6' }}
-                formatter={(value: number) => [`${value.toFixed(1)} ${settings.unit}`, 'Average']}
+                formatter={(value: number) => {
+                  const kgVal = settings.unit === 'kg' ? value : value / 2.20462;
+                  return [formatWeight(kgVal, settings.unit), 'Average'];
+                }}
               />
               <Bar dataKey="average" radius={[4, 4, 0, 0]}>
                 {weeklyChartData.map((entry, index) => (
@@ -226,7 +229,10 @@ export default function Statistics({ store }: { store: ReturnType<typeof useWeig
                   cursor={{ fill: '#1C1C1E' }}
                   contentStyle={{ borderRadius: '12px', border: '1px solid #242426', backgroundColor: '#1C1C1E', color: '#E4E4E6' }}
                   itemStyle={{ color: '#14b8a6' }}
-                  formatter={(value: number) => [`${value.toFixed(1)} ${settings.unit}`, 'Average']}
+                  formatter={(value: number) => {
+                    const kgVal = settings.unit === 'kg' ? value : value / 2.20462;
+                    return [formatWeight(kgVal, settings.unit), 'Average'];
+                  }}
                 />
                 <Bar dataKey="average" radius={[4, 4, 0, 0]}>
                   {monthlyChartData.map((entry, index) => (
@@ -264,7 +270,10 @@ export default function Statistics({ store }: { store: ReturnType<typeof useWeig
                 cursor={{ stroke: '#242426', strokeWidth: 1, strokeDasharray: '5 5' }}
                 contentStyle={{ borderRadius: '12px', border: '1px solid #242426', backgroundColor: '#1C1C1E', color: '#E4E4E6' }}
                 itemStyle={{ fontWeight: 'bold' }}
-                formatter={(value: number, name: string) => [`${value.toFixed(1)} ${settings.unit}`, name]}
+                formatter={(value: number, name: string) => {
+                  const kgVal = settings.unit === 'kg' ? value : value / 2.20462;
+                  return [formatWeight(kgVal, settings.unit), name];
+                }}
               />
               <Legend 
                 wrapperStyle={{ fontSize: '10px', fontWeight: 'bold', color: '#6B7280', paddingTop: '10px' }} 
