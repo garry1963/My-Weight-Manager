@@ -89,7 +89,7 @@ export function AddWeightModal({ store, onClose }: { store: ReturnType<typeof us
                 <div className="relative flex-1">
                   <input
                     type="number"
-                    required
+                    id="weight"
                     min="0"
                     value={weightSt}
                     onChange={(e) => setWeightSt(e.target.value)}
@@ -97,21 +97,19 @@ export function AddWeightModal({ store, onClose }: { store: ReturnType<typeof us
                     placeholder="10"
                     autoFocus
                   />
-                  <span className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 font-bold uppercase tracking-widest">st</span>
+                  <span className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 font-bold uppercase tracking-widest pointer-events-none">st</span>
                 </div>
                 <div className="relative flex-1">
                   <input
                     type="number"
-                    required
                     step="0.1"
                     min="0"
-                    max="13.9"
                     value={weightLbs}
                     onChange={(e) => setWeightLbs(e.target.value)}
                     className="w-full bg-[#1C1C1E] border border-[#242426] rounded-xl px-4 py-4 text-3xl font-bold focus:outline-none focus:border-teal-500 transition-all text-center tracking-tight text-white placeholder-gray-600 appearance-none"
                     placeholder="5.0"
                   />
-                  <span className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 font-bold uppercase tracking-widest">lb</span>
+                  <span className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 font-bold uppercase tracking-widest pointer-events-none">lb</span>
                 </div>
               </div>
             ) : (
@@ -121,14 +119,14 @@ export function AddWeightModal({ store, onClose }: { store: ReturnType<typeof us
                   id="weight"
                   required
                   step="0.1"
-                  min="1"
+                  min="0.1"
                   value={weight}
                   onChange={(e) => setWeight(e.target.value)}
                   className="w-full bg-[#1C1C1E] border border-[#242426] rounded-xl px-4 py-4 text-3xl font-bold focus:outline-none focus:border-teal-500 transition-all text-center tracking-tight text-white placeholder-gray-600 appearance-none"
                   placeholder={`e.g., ${settings.unit === 'kg' ? '70.5' : '155.0'}`}
                   autoFocus
                 />
-                <span className="absolute right-6 top-1/2 -translate-y-1/2 text-gray-500 font-bold uppercase tracking-widest">{settings.unit}</span>
+                <span className="absolute right-6 top-1/2 -translate-y-1/2 text-gray-500 font-bold uppercase tracking-widest pointer-events-none">{settings.unit}</span>
               </div>
             )}
           </div>

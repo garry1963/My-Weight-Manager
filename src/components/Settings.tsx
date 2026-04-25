@@ -191,9 +191,9 @@ export default function Settings({ store }: { store: ReturnType<typeof useWeight
                       value={goalInputSt}
                       onChange={(e) => setGoalInputSt(e.target.value)}
                       placeholder="10"
-                      className="w-full bg-[#1C1C1E] border border-[#242426] rounded-xl px-4 py-3 text-white focus:outline-none focus:border-teal-500 font-bold transition-all"
+                      className="w-full bg-[#1C1C1E] border border-[#242426] rounded-xl px-4 py-3 text-white focus:outline-none focus:border-teal-500 font-bold transition-all appearance-none"
                     />
-                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm font-bold uppercase">st</span>
+                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm font-bold uppercase pointer-events-none">st</span>
                   </div>
                   <div className="relative flex-1">
                     <input
@@ -202,9 +202,9 @@ export default function Settings({ store }: { store: ReturnType<typeof useWeight
                       value={goalInputLbs}
                       onChange={(e) => setGoalInputLbs(e.target.value)}
                       placeholder="5.0"
-                      className="w-full bg-[#1C1C1E] border border-[#242426] rounded-xl px-4 py-3 text-white focus:outline-none focus:border-teal-500 font-bold transition-all"
+                      className="w-full bg-[#1C1C1E] border border-[#242426] rounded-xl px-4 py-3 text-white focus:outline-none focus:border-teal-500 font-bold transition-all appearance-none"
                     />
-                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm font-bold uppercase">lb</span>
+                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm font-bold uppercase pointer-events-none">lb</span>
                   </div>
                 </div>
               ) : (
