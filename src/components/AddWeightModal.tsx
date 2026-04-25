@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { format } from 'date-fns';
 import { X } from 'lucide-react';
 import { useWeightManager } from '../store';
-import { kgToLbs, lbsToKg, kgToStoneLbs, stoneLbsToKg } from '../lib/utils';
+import { kgToLbs, lbsToKg } from '../lib/utils';
 
 export function AddWeightModal({ store, onClose }: { store: ReturnType<typeof useWeightManager>; onClose: () => void }) {
   const { addEntry, settings, entries } = store;
@@ -12,8 +12,6 @@ export function AddWeightModal({ store, onClose }: { store: ReturnType<typeof us
   
   // Initialize weight field based on the most recent entry if available
   const [weight, setWeight] = useState<string>('');
-  const [weightSt, setWeightSt] = useState<string>('');
-  const [weightLbs, setWeightLbs] = useState<string>('');
   const [note, setNote] = useState('');
 
   useEffect(() => {
@@ -23,10 +21,6 @@ export function AddWeightModal({ store, onClose }: { store: ReturnType<typeof us
         setWeight(latest.toFixed(1));
       } else if (settings.unit === 'lbs') {
         setWeight((latest * 2.20462).toFixed(1));
-      } else {
-        const { st, lbs } = kgToStoneLbs(latest);
-        setWeightSt(st.toString());
-        setWeightLbs(lbs.toFixed(1));
       }
     }
   }, [entries, settings.unit]);
@@ -36,16 +30,9 @@ export function AddWeightModal({ store, onClose }: { store: ReturnType<typeof us
     
     let weightKg = 0;
     
-    if (settings.unit === 'st') {
-      const st = parseInt(weightSt) || 0;
-      const lbs = parseFloat(weightLbs) || 0;
-      if (st <= 0 && lbs <= 0) return;
-      weightKg = stoneLbsToKg(st, lbs);
-    } else {
-      const w = parseFloat(weight);
-      if (isNaN(w) || w <= 0) return;
-      weightKg = settings.unit === 'kg' ? w : lbsToKg(w);
-    }
+    const w = parseFloat(weight);
+    if (isNaN(w) || w <= 0) return;
+    weightKg = settings.unit === 'kg' ? w : lbsToKg(w);
     
     addEntry({
       date,
@@ -84,37 +71,6 @@ export function AddWeightModal({ store, onClose }: { store: ReturnType<typeof us
 
           <div>
             <label htmlFor="weight" className="text-xs text-gray-500 uppercase font-bold tracking-widest mb-2 block">Weight Value</label>
-            {settings.unit === 'st' ? (
-              <div className="flex gap-4">
-                <div className="relative flex-1">
-                  <input
-                    type="number"
-                    id="weight"
-                    inputMode="decimal"
-                    min="0"
-                    value={weightSt}
-                    onChange={(e) => setWeightSt(e.target.value)}
-                    className="w-full bg-[#1C1C1E] border border-[#242426] rounded-xl px-4 py-4 text-3xl font-bold focus:outline-none focus:border-teal-500 transition-all text-center tracking-tight text-white placeholder-gray-600 appearance-none m-0"
-                    placeholder="10"
-                    autoFocus
-                  />
-                  <span className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 font-bold uppercase tracking-widest pointer-events-none">st</span>
-                </div>
-                <div className="relative flex-1">
-                  <input
-                    type="number"
-                    inputMode="decimal"
-                    step="0.1"
-                    min="0"
-                    value={weightLbs}
-                    onChange={(e) => setWeightLbs(e.target.value)}
-                    className="w-full bg-[#1C1C1E] border border-[#242426] rounded-xl px-4 py-4 text-3xl font-bold focus:outline-none focus:border-teal-500 transition-all text-center tracking-tight text-white placeholder-gray-600 appearance-none m-0"
-                    placeholder="5.0"
-                  />
-                  <span className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 font-bold uppercase tracking-widest pointer-events-none">lb</span>
-                </div>
-              </div>
-            ) : (
               <div className="relative">
                 <input
                   type="number"
@@ -131,7 +87,6 @@ export function AddWeightModal({ store, onClose }: { store: ReturnType<typeof us
                 />
                 <span className="absolute right-6 top-1/2 -translate-y-1/2 text-gray-500 font-bold uppercase tracking-widest pointer-events-none">{settings.unit}</span>
               </div>
-            )}
           </div>
 
           <div>

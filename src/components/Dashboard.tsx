@@ -8,7 +8,11 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 
 export default function Dashboard({ store, onNavigate }: { store: ReturnType<typeof useWeightManager>; onNavigate: (tab: any) => void }) {
   const [isAdding, setIsAdding] = useState(false);
+  const [convSt, setConvSt] = useState('');
+  const [convLb, setConvLb] = useState('');
   const { entries, settings } = store;
+
+  const totalConvLb = (parseFloat(convSt || '0') * 14) + parseFloat(convLb || '0');
 
   const sortedEntries = [...entries].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
@@ -87,6 +91,39 @@ export default function Dashboard({ store, onNavigate }: { store: ReturnType<typ
           <p className={`text-2xl font-bold ${weeklyChangeKg < 0 ? 'text-teal-400' : 'text-white'}`}>
             {weeklyChangeKg > 0 ? '+' : ''}{formatWeight(weeklyChangeKg, settings.unit, 2)}
           </p>
+        </div>
+      </div>
+
+      <div className="bg-[#161618] border border-[#242426] p-5 rounded-2xl">
+        <p className="text-gray-500 text-xs uppercase tracking-widest mb-3 font-bold">Stones to Pounds Converter</p>
+        <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+          <div className="flex gap-3 flex-1">
+            <div className="relative flex-1">
+              <input
+                type="number"
+                inputMode="decimal"
+                value={convSt}
+                onChange={(e) => setConvSt(e.target.value)}
+                placeholder="st"
+                className="w-full bg-[#1C1C1E] border border-[#242426] rounded-xl px-4 py-3 text-white focus:outline-none focus:border-teal-500 font-bold transition-all appearance-none m-0"
+              />
+              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm font-bold uppercase pointer-events-none">st</span>
+            </div>
+            <div className="relative flex-1">
+              <input
+                type="number"
+                inputMode="decimal"
+                value={convLb}
+                onChange={(e) => setConvLb(e.target.value)}
+                placeholder="lb"
+                className="w-full bg-[#1C1C1E] border border-[#242426] rounded-xl px-4 py-3 text-white focus:outline-none focus:border-teal-500 font-bold transition-all appearance-none m-0"
+              />
+              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm font-bold uppercase pointer-events-none">lb</span>
+            </div>
+          </div>
+          <div className="bg-[#1C1C1E] border border-[#242426] rounded-xl px-4 py-3 text-white font-bold text-center sm:text-left min-w-[100px]">
+            {totalConvLb.toFixed(1)} lbs
+          </div>
         </div>
       </div>
 
